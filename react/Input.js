@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 /**
  * Generates a Input Form. Below assumes that you have react and bootstrap imported in your project.
@@ -23,4 +23,49 @@ function TextInput(props) {
   )
 }
 
-export { TextInput }
+/**
+ * Generates a InlineMultiSelect Form Input.
+ * @param {{allOptions:{id:string,name:string}[], selectedValues:[],name:string, label?:string, onChange:function }} props 
+ */
+function InlineMultiSelect(props){
+  const [selectedValues, setSelectedValues] = useState(new Set(props.selectedValues ? props.selectedValues : []))
+
+  // when props.selectedValues changes, update the state accordingly. This helps when you are clearing selectedValues from parent component
+  useEffect(() => {
+    setSelectedValues(new Set(props.selectedValues))
+  }, [props.selectedValues])
+
+  function handleChange(event, categoryId){
+    const selectedClone = new Set(selectedValues);
+    if(selectedClone.has(categoryId)){
+      selectedClone.delete(categoryId)
+    } else {
+      selectedClone.add(categoryId)
+    }
+    setSelectedValues(selectedClone);
+    props.onChange(Array.from(selectedClone))
+  }
+
+  return (
+    <div className="form-group">
+      {props.label ? <p>{props.label}</p> : null }
+      {props.allOptions.map( (cat, idx) => {
+        return (
+          <div key={cat.id} class="form-check form-check-inline">
+            <input
+              class="form-check-input" 
+              type="checkbox" 
+              id={`${props.name}-${idx}`} 
+              name={props.name}
+              value={cat.id}
+              checked={selectedValues.has(cat.id) ? true : false }
+              onChange={(event) => handleChange(event, cat.id) }
+            />
+            <label className="form-check-label" htmlFor={`${props.name}-${idx}`}>{cat.name}</label>
+          </div>
+        )
+      })}
+  </div>)
+}
+
+export { TextInput, InlineMultiSelect }
